@@ -15,6 +15,17 @@ var s2_vars = {
   's2_profile_line': null
 }
 
+/* function to switch resolution of disp data: */
+function switch_res(res) {
+  disp_resolution = res;
+  plot_vars = null;
+  plot_vars_corrected = null;
+  plot_vars_uncorrected = null;
+  var __volcano_frame_index = volcano_frame_index;
+  volcano_frame_index = null;
+  s1_page_set_up(__volcano_frame_index);
+};
+
 /* function to init plot variables: */
 function init_plot_vars(fid, call_back) {
 
@@ -183,7 +194,8 @@ function init_plot_vars(fid, call_back) {
     /* data url: */
     var disp_data_url = js_data_prefix + my_disp_data_prefix +
                         volcano_region + '/' + volcano_name + '_' +
-                        volcano_frame + '_' + data_suffix + '.json';
+                        volcano_frame + '_web_x' + disp_resolution +
+                        '_' + data_suffix + '.json';
     /* create new request: */
     var disp_req = new XMLHttpRequest();
     disp_req.responseType = 'json';
@@ -243,7 +255,8 @@ function get_disp_data(disp_type, fid, disp_args) {
   /* data url: */
   var disp_data_url = js_data_prefix + my_disp_data_prefix +
                       volcano_region + '/' + volcano_name + '_' +
-                      volcano_frame + '_' + disp_suffix + '.json';
+                      volcano_frame + '_web_x' + disp_resolution +
+                      '_' + disp_suffix + '.json';
   /* create new request: */
   var disp_req = new XMLHttpRequest();
   disp_req.responseType = 'json';
