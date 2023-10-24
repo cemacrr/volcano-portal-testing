@@ -18,9 +18,6 @@ var s2_vars = {
 /* function to switch resolution of disp data: */
 function switch_res(res) {
   disp_resolution = res;
-  plot_vars = null;
-  plot_vars_corrected = null;
-  plot_vars_uncorrected = null;
   var __volcano_frame_index = volcano_frame_index;
   volcano_frame_index = null;
   s1_page_set_up(__volcano_frame_index);
@@ -285,7 +282,7 @@ function get_disp_data(disp_type, fid, disp_args) {
    'ref' (reference area): */
 function set_click_mode(click_mode) {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* if click mode is 'ref': */
   if (click_mode == 'ref') {
     /* disable button for active click mode: */
@@ -311,7 +308,7 @@ function set_click_mode(click_mode) {
    or a sentinel-2 map is displayed: */
 function select_scatter_display(display_type) {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* if 's2' is selected: */
   if (display_type == 's2') {
     /* disable button for active click mode: */
@@ -339,7 +336,7 @@ function select_scatter_display(display_type) {
 /* function to save displacement plot data as csv file: */
 function disp_to_csv() {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* start csv content: */
   var csv_data = 'data:text/csv;charset=utf-8,';
   /* header line: */
@@ -382,7 +379,7 @@ function disp_to_csv() {
 /* function to save scatter plot data as csv file: */
 function scatter_to_csv() {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* check scatter plot type, if time series: */
   if (plot_vars[fid]['scatter_type'] == 'ts') {
     /* start csv content: */
@@ -437,7 +434,7 @@ function scatter_to_csv() {
    masked, and is near the center: */
 function get_ts_indexes() {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* get x and y midpoint indexes: */
   var mid_y = Math.floor(plot_vars[fid]['y'].length / 2) - 1;
   var mid_x = Math.floor(plot_vars[fid]['x'].length / 2) - 1;
@@ -529,7 +526,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
   /** displacement data values: */
 
 
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   var x = plot_vars[fid]['x'];
   var y = plot_vars[fid]['y'];
   var x_dist = plot_vars[fid]['x_dist'];
@@ -820,7 +817,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
       /* add change listener: */
       slider_div.noUiSlider.on('change', function() {
         /* volcano frame: */
-        var fid = volcano_frame;
+        var fid = volcano_fid;
         /* get slider value: */
         var slider_value = slider_div.noUiSlider.get();
         /* indexes to ints: */
@@ -841,7 +838,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
       /* add slide listener: */
       slider_div.noUiSlider.on('slide', function() {
         /* volcano frame: */
-        var fid = volcano_frame;
+        var fid = volcano_fid;
         /* get slider value: */
         var slider_value = slider_div.noUiSlider.get();
         /* indexes to ints: */
@@ -1787,7 +1784,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
   function heatmap_on_click(click_data) {
 
     /* volcano frame id: */
-    var fid = volcano_frame;
+    var fid = volcano_fid;
     /* x and y indexes from data: */
     var click_y = click_data.points[0].y;
     var click_x = click_data.points[0].x;
@@ -1885,7 +1882,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
   function heatmap_on_hover(hover_data) {
 
     /* volcano frame id: */
-    var fid = volcano_frame;
+    var fid = volcano_fid;
     /* if profile plotting and click mode is select: */
     if (plot_vars[fid]['scatter_type'] == 'profile' &&
         plot_vars[fid]['click_mode'] == 'select') {
@@ -1914,7 +1911,7 @@ function disp_plot(disp_type, heatmap_type, scatter_type,
   function heatmap_on_select(sel_data) {
 
     /* volcano frame id: */
-    var fid = volcano_frame;
+    var fid = volcano_fid;
     /* if profile plot mode, and click mode is select, don't do anything: */
     if (plot_vars[fid]['plot_type'] == 'profile' &&
         plot_vars[fid]['click_mode'] == 'select') {
@@ -2116,7 +2113,7 @@ L.control.mousePosition = function (options) {
 /* function to draw ts and ref polygons on map: */
 function draw_s2_map_polygons() {
   /* volcano frame id: */
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   /* get variables from plot_vars .. leaflet map: */
   var s2_map = s2_vars['s2_map'];
   /* give up if no map: */
@@ -2268,7 +2265,7 @@ function draw_s2_map(aoi_lat, aoi_lon) {
 
 /* function to update displacement data type: */
 function set_disp_type(disp_type) {
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   disp_plot(disp_type,
     plot_vars[fid]['heatmap_type'],
     plot_vars[fid]['scatter_type'],
@@ -2280,7 +2277,7 @@ function set_disp_type(disp_type) {
 
 /* function to update heatmap type: */
 function set_heatmap_type(heatmap_type) {
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   disp_plot(plot_vars[fid]['disp_type'],
     heatmap_type,
     plot_vars[fid]['scatter_type'],
@@ -2292,7 +2289,7 @@ function set_heatmap_type(heatmap_type) {
 
 /* function to update scatter type: */
 function set_scatter_type(scatter_type) {
-  var fid = volcano_frame;
+  var fid = volcano_fid;
   disp_plot(plot_vars[fid]['disp_type'],
     plot_vars[fid]['heatmap_type'],
     scatter_type,

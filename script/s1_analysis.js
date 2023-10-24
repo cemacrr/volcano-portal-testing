@@ -4,6 +4,7 @@ var page_update = false;
 var volcano_frame_index = null;
 var volcano_frame = null;
 var volcano_track = null;
+var volcano_fid = null;
 
 var frame_has_disp_correct = null;
 var frame_has_licsar_correct = null;
@@ -250,6 +251,9 @@ function s1_page_set_up(frame_index, use_disp_correct) {
     volcano_track = volcano_frames[frame_index]['track'];
   };
 
+  /* set volcano_fid: */
+  volcano_fid = volcano_frame + '_x' + disp_resolution;
+
   /* check for no frames: */
   if (volcano_frames.length == 1 &&
       volcano_frames[0]['id'] == '') {
@@ -479,7 +483,7 @@ function s1_page_set_up(frame_index, use_disp_correct) {
       disp_range_el.style.display = disp_range_el_display;
       /* set plot variables for the frame, then run displacement plotting
          function: */
-      init_plot_vars(volcano_frame, disp_plot);
+      init_plot_vars(volcano_fid, disp_plot);
       /* then update licsar data: */
       licsar_update();
     };
