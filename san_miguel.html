@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type"
+          content="text/html; charset=UTF-8;charset=utf-8"/>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1"/>
+    <title>San Miguel</title>
+    <!-- leaflet style: -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="style/leaflet.css"
+          media="all"/>
+    <!-- no ui slider style: -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="style/nouislider.min.css"
+          media="all"/>
+    <!-- local style: -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="style/s1_analysis.css"
+          media="all"/>
+    <!-- leaflet js: -->
+    <script src="script/leaflet.js"
+            charset="utf-8">
+    </script>
+    <!-- plotly js: -->
+    <script src="script/plotly.js"
+            charset="utf-8">
+    </script>
+    <!-- no ui slider js: -->
+    <script src="script/nouislider.min.js"
+            charset="utf-8">
+    </script>
+    <!-- licsar images: -->
+    <script src="script/licsar_images.js"
+            charset="utf-8">
+    </script>
+    <!-- probability data: -->
+    <script src="script/prob_data.js"
+            charset="utf-8">
+    </script>
+    <!-- full screen images: -->
+    <script src="script/fs_images.js"
+            charset="utf-8">
+    </script>
+    <!-- disp plotting: -->
+    <script src="script/disp_plot.js"
+            charset="utf-8"
+            defer>
+    </script>
+    <!-- page set up / functions: -->
+    <script src="script/s1_analysis.js"
+            charset="utf-8"
+            defer>
+    </script>
+  </head>
+  <body>
+
+    <!-- set variables: -->
+    <script>
+    var volcano_name = 'san_miguel';
+    var volcano_region = 'central_america';
+    var volcano_frames = [
+//      {"id": "063A_07559_161820_old_old", "track": "63"},
+      {"id": "063A_07559_161820_old", "track": "63"},
+      {"id": "063A_07559_161820_new", "track": "63"},
+      {"id": "063A_07559_161820_new_nullify", "track": "63"}
+    ];
+    var volcano_lat = 13.434;
+    var volcano_lon = -88.269;
+
+    var js_data_prefix = '';
+    var disp_data_prefix = 'disp_data/';
+    var disp_data_gacos_prefix = 'disp_data_gacos/';
+    var licsar_data_prefix = 'licsar_data/';
+    var licsar_data_gacos_prefix = 'licsar_data_gacos/';
+    var prob_data_prefix = 'prob_data/';
+    var prob_data_gacos_prefix = 'prob_data_gacos/';
+    var prob_imgs_prefix = 'prob_images/';
+    var prob_imgs_gacos_prefix = 'prob_images_gacos/';
+    var licsar_imgs_prefix = 'licsar_images/';
+    var licsar_imgs_gacos_prefix = 'licsar_images_gacos/';
+    var data_href_prefix = 'http://gws-access.ceda.ac.uk/public/nceo_geohazards/LiCSAR_products';
+    </script>
+
+
+    <!-- frame selection: -->
+    <div class="row_s1_frame flex_row flex_grow"
+         id="row_s1_frame">
+      <div class="col_s1_frame flex_column flex_grow"
+           id="col_s1_frame">
+        <h3 class="s1_page_hdr">Sentinel 1 frame</h3>
+        <div class="s1_frame_control flex_row_wrap flex_grow"
+             id="s1_frame_control">
+        </div>
+      </div>
+    </div>
+    <!-- end frame selection. -->
+
+
+    <!-- displacement data resolution selection: -->
+    <div class="row_disp_res flex_row flex_grow"
+         id="row_disp_res">
+      <div class="col_disp_res flex_column flex_grow"
+           id="col_disp_res">
+        <h3 class="s1_page_hdr">Displacement data resolution</h3>
+        <div class="disp_res_control flex_row_wrap flex_grow"
+             id="disp_res_control">
+          <button id="disp_res_select_button_x100"
+                  onclick="switch_res(100);"
+                  title="Unfiltered displacement data">
+            100x100
+          </button>
+          <button id="disp_res_select_button_x75"
+                  onclick="switch_res(75);"
+                  title="Unfiltered displacement data">
+            75x75
+          </button>
+          <button id="disp_res_select_button_x50"
+                  onclick="switch_res(50);"
+                  title="Unfiltered displacement data">
+            50x50
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- end resolution selection. -->
+
+
+    <!-- corrected selection: -->
+    <div class="row_disp_correct flex_row flex_grow"
+         id="row_disp_correct">
+      <div class="col_disp_correct flex_column flex_grow"
+           id="col_disp_correct">
+        <h3 class="s1_page_hdr">GACOS correction</h3>
+        <div class="s1_type_control flex_row_wrap flex_grow"
+             id="disp_correct_control">
+          <button id="disp_select_button_uncorrected"
+                  onclick="s1_page_set_up(null, false);"
+                  title="Displacement data with no atmospheric correction">
+            uncorrected
+          </button>
+          <button id="disp_select_button_corrected"
+                  onclick="s1_page_set_up(null, true);"
+                  title="Displacement data with GACOS atmospheric correction">
+            corrected
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- end corrected data selection. -->
+
+
+    <!-- displacement data type selection: -->
+    <div class="row_s1_type flex_row flex_grow"
+         id="row_s1_type">
+      <div class="col_s1_type flex_column flex_grow"
+           id="col_s1_type">
+        <h3 class="s1_page_hdr">Displacement data type</h3>
+        <div class="s1_type_control flex_row_wrap flex_grow"
+             id="s1_type_control">
+          <button id="disp_type_select_button_raw"
+                  onclick="set_disp_type('disp_raw');"
+                  title="Unfiltered displacement data">
+            unfiltered
+          </button>
+          <button id="disp_type_select_button_filt"
+                  onclick="set_disp_type('disp_filt');"
+                  title="Filtered displacement data">
+            filtered
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- end type selection. -->
+
+
+    <!--- no data message: -->
+    <div class="disp_error"
+         id="no_disp_error">
+      <p>No displacement data available.</p>
+    </div>
+
+
+    <!-- displacement plots: -->
+    <div class="row_disp_plot flex_row_wrap flex_justify flex_grow"
+         id="row_disp_plot">
+
+      <!-- heatmap plot: -->
+      <div class="disp_plot_box flex_half flex_grow"
+           id="heatmap_plot_box">
+        <div class="disp_plot"
+             id="heatmap_plot">
+        </div>
+      </div>
+
+      <!-- scatter plot / s2 map: -->
+      <div class="disp_plot_box flex_half flex_grow"
+           id="scatter_plot_box">
+        <div class="disp_plot"
+             id="scatter_plot">
+        </div>
+        <div class="disp_plot"
+             id="scatter_overlay">
+        </div>
+        <div class="disp_plot"
+             id="s2_map">
+        </div>
+      </div>
+
+      <!-- heatmap plot controls: -->
+      <div class="col_plot_control flex_column flex_half flex_grow"
+           id="col_heatmap_control">
+        <div class="plot_control_content">
+          <!-- heatmap type buttons: -->
+          <div class="button_box"
+               id="heatmap_button_box">
+            <button id="heatmap_type_button_disp"
+                    onclick="set_heatmap_type('disp');"
+                    title="Display displacement data">
+              displacement
+            </button>
+            <button id="heatmap_type_button_coh"
+                    onclick="set_heatmap_type('coh');"
+                    title="Display coherence data">
+              coherence
+            </button>
+          </div>
+          <!-- heatmap click type buttons: -->
+          <div>
+            <div class="button_box"
+                 id="click_mode_button_box">
+              <button id="click_mode_button_select"
+                      onclick="set_click_mode('select');"
+                      title="Select points for which the time series or profile will be plotted">
+                points to plot
+              </button>
+              <button id="click_mode_button_ref"
+                      onclick="set_click_mode('ref');"
+                      title="Select reference point or area for displacement calculation">
+                reference area
+              </button>
+            </div>
+          </div>
+          <!-- csv / surface plot buttons: -->
+          <div>
+            <div class="action_button_box"
+                 id="surf_plot_button_box">
+              <!-- save csv button: -->
+              <button id="disp_to_csv_button"
+                      class="disp_action_button"
+                      onclick="disp_to_csv();"
+                      title="Save plot data as a CSV file">
+                save data as csv
+              </button>
+              <!-- surface plot button: -->
+              <button id="surf_plot_button"
+                      class="disp_action_button"
+                      onclick="display_surf_plot();"
+                      title="Display 3D surface plot of displacement and elevation data">
+                surface plot
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end heatmap plot controls. -->
+
+      <!-- scatter plot controls: -->
+      <div class="col_plot_control flex_column flex_half flex_grow"
+           id="col_scatter_control">
+        <div class="plot_control_content">
+          <!-- select plot / s2 map: -->
+          <div>
+            <div class="button_box"
+                 id="scatter_select_button_box">
+              <button id="scatter_select_button_plot"
+                      onclick="select_scatter_display('plot');"
+                      title="Display plot of displacement or profile data">
+                plot
+              </button>
+              <button id="scatter_select_button_s2"
+                      onclick="select_scatter_display('s2');"
+                      title="Display Sentinel-2 map of area">
+                sentinel-2 map
+              </button>
+            </div>
+          </div>
+          <!-- scatter type buttons: -->
+          <div>
+            <div class="button_box"
+                 id="scatter_type_button_box">
+              <button id="scatter_type_button_ts"
+                      onclick="set_scatter_type('ts');"
+                      title="Display time series plot of displacement data">
+                time series
+              </button>
+              <button id="scatter_type_button_profile"
+                      onclick="set_scatter_type('profile');"
+                      title="Display profile plot of displacement and elevation data">
+                profile
+              </button>
+            </div>
+          </div>
+          <!-- save csv button: -->
+          <div>
+            <div class="action_button_box"
+                 id="ts_to_csv_button_box">
+              <button id="ts_to_csv_button"
+                      class="disp_action_button"
+                      onclick="scatter_to_csv();"
+                      title="Save plot data as a CSV file">
+                save data as csv
+               </button>
+            </div>
+          </div>
+        </div>
+        <!-- s2 tiles attribution: -->
+        <div class="plot_control_content" id="s2_tile_info">
+          Map tiles from <a href="https://s2maps.eu/">Sentinel-2 cloudless</a>
+          by <a href="https://eox.at/https://eox.at/">EOX IT Services GmbH</a><br>
+          (Contains modified Copernicus Sentinel data)
+        </div>
+      </div>
+      <!-- end scatter plot controls. -->
+
+    </div>
+    <!-- end displacement plots. -->
+
+
+    <!-- displacement plot time range control: -->
+    <div class="row_disp_range flex_row flex_center flex_grow"
+         id="row_disp_range">
+      <div class="col_disp_range flex_column flex_grow"
+           id="col_disp_range">
+        <div class="time_range_control"
+             id="time_range_control">
+        </div>
+        <div class="time_range_value"
+             id="time_range_value">
+        </div>
+      </div>
+    </div>
+    <!-- end displacement plot time range control. -->
+
+
+    <hr id="hr_disp_plot">
+
+
+    <!--- no data message: -->
+    <div class="disp_error"
+         id="no_licsar_error">
+      <p>No LiCSAR data available</p>
+    </div>
+
+
+    <!-- licsar images: -->
+    <div class="row_licsar_images flex_row_wrap flex_justify flex_grow"
+         id="row_licsar_images">
+
+      <div class="flex_full flex_grow">
+        <span class="s1_section_hdr">Individual LiCSAR interferograms</span>
+      </div>
+      <div class="licsar_img_box flex_full flex_justify flex_grow">
+        <div class="flex_column flex_grow">
+          <div class="licsar_img_container flex_row flex_grow">
+            <img class="licsar_img flex_grow fs_img"
+                 id="licsar_if_img"
+                 title="wrapped los change / unwrapped los change / coherence"
+                 src="">
+          </div>
+        </div>
+      </div>
+
+      <div id="licsar_gacos_hdr"
+           class="flex_full flex_grow">
+        <h3 class="s1_page_hdr flex_full flex_grow">GACOS correction</h3>
+      </div>
+      <div id="licsar_gacos_imgs"
+           class="flex_full flex_grow">
+        <div class="licsar_img_box flex_full flex_justify flex_grow">
+          <div class="flex_column flex_grow">
+            <div class="licsar_img_container flex_row flex_grow">
+              <img class="licsar_img flex_grow fs_img"
+                   id="licsar_if_gacos_img"
+                   title="unwrapped los change / gacos los change / corrected unwrapped los change"
+                   src="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- end licsar images. -->
+
+
+    <!-- licsar images time range control: -->
+    <div class="row_licsar_img_range flex_row flex_center flex_grow"
+         id="row_licsar_img_range">
+      <div class="col_licsar_img_range flex_column flex_grow"
+           id="col_licsar_img_range">
+        <div class="licsar_image_control"
+             id="licsar_image_control">
+        </div>
+        <div class="licsar_image_value"
+             id="licsar_image_value">
+        </div>
+      </div>
+    </div>
+    <!-- licsar images time range control. -->
+
+
+    <!-- data downloads: -->
+    <div class="row_data_downloads flex_row flex_grow"
+         id="row_data_downloads">
+      <div class="col_data_downloads flex_column flex_grow"
+           id="col_data_downloads">
+        <h3 class="s1_page_hdr">Data downloads</h3>
+        <div class="licsar_data_links flex_row_wrap flex_grow"
+             id="licsar_pha_data_links">
+        </div>
+        <div class="licsar_data_links flex_row_wrap flex_grow"
+             id="licsar_unw_data_links">
+        </div>
+        <div class="licsar_data_links flex_row_wrap flex_grow"
+             id="licsar_cc_data_links">
+        </div>
+      </div>
+    </div>
+    <!-- end data downloads. -->
+
+
+    <hr id="hr_licsar_images">
+
+
+    <!--- no data message: -->
+    <div class="disp_error"
+         id="no_prob_error">
+      <p>No probability data available</p>
+    </div>
+
+    <!-- probability data: -->
+    <div class="row_prob_data flex_row_wrap flex_justify flex_grow"
+         id="row_prob_data">
+      <div class="flex_full flex_grow">
+        <span class="s1_section_hdr">Probability of high magnitude deformation</span>
+      </div>
+      <!-- probability image: -->
+      <div class="prob_img_box flex_half flex_justify flex_grow">
+        <div class="flex_full flex_column">
+          <div class="prob_img_container flex_row flex_grow">
+            <img class="prob_img flex_grow fs_img"
+                 id="prob_prob_img"
+                 title="Probability of magmatic deformation"
+                 src="">
+          </div>
+        </div>
+      </div>
+      <!-- probability plot: -->
+      <div class="prob_plot_box flex_half flex_grow"
+           id="prob_plot_box">
+        <div class="prob_plot"
+             id="prob_plot">
+        </div>
+      </div>
+    </div>
+    <!-- end probability data. -->
+
+
+    <!-- probability images time range control: -->
+    <div class="row_prob_range flex_row flex_center flex_grow"
+         id="row_prob_range">
+      <div class="col_prob_range flex_column flex_grow"
+           id="col_prob_range">
+        <div class="prob_image_control"
+             id="prob_image_control">
+        </div>
+        <div class="prob_image_value"
+             id="prob_image_value">
+        </div>
+      </div>
+    </div>
+    <!-- licsar images time range control. -->
+
+
+    <!-- surface plot: -->
+    <div class="surf_plot_container"
+         id="surf_plot_container">
+      <span id="surf_plot_close"
+            class="surf_plot_close">&times;</span>
+      <div class="surf_plot"
+           id="surf_plot">
+      </div>
+    </div>
+    <!-- end surface plot. -->
+
+    <!-- full screen images: -->
+    <div id="fs_img_div"
+         class="fs_img_div">
+      <span id="fs_img_close"
+            class="fs_img_close">&times;</span>
+      <img id="fs_img_img"
+           class="fs_img_img"
+           src="">
+    </div>
+    <!-- end full screen images. -->
+
+
+  </body>
+</html>
